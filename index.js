@@ -46,16 +46,19 @@ async function getTimeOfDay(input) {
 }
 
 async function dayNight(town) {
+  const townLower = town.toLowerCase();
   if (town) {
-    const localTime = await getTimeZone(town);
-    const sun = await getTimeOfDay(town);
+    const localTime = await getTimeZone(townLower);
+    const sun = await getTimeOfDay(townLower);
 
     return `В ${town} сейчас ${sun.timeOfDay}. Текущее время ${localTime}. Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
   }
 }
+
+
 // async function test() {
 //   try {
-//     const apiAnswer = await dayNight('yakutsk');
+//     const apiAnswer = await dayNight('Москва');
 //     answer = apiAnswer;
 //   } catch (err) {
 //     console.log(err);
@@ -75,7 +78,7 @@ module.exports = async (req) => {
     version,
     session,
     response: {
-      text: answer || 'Давайте узнаем время суток в других городах!',
+      text: answer || 'Давайте узнаем время суток в других городах! Назовите любой город, например Якутск!',
       end_session: false,
     },
   };
