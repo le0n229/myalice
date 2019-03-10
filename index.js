@@ -1,9 +1,25 @@
 const fetch = require('node-fetch');
+// const encoding = require('encoding');
+const utf8 = require('utf8');
 
 const _PremiumApiBaseURL = 'http://api.worldweatheronline.com/premium/v1/';
 const _PremiumApiKey = 'ff851d0d01964063a12153325190703';
-
+const translateKey = 'trnsl.1.1.20190310T114702Z.19d93b4e2d8abf15.2bbd56c893ea8083370b43d4b7841b7869d33a8b';
+const translateUrl = 'https://translate.yandex.net/api/v1.5/tr.json/translate';
 let answer = '123';
+
+async function translateTown(town) {
+  try {
+    const url = `${translateUrl}?key=${translateKey}&text=${town}&lang=ru-en`;
+    const response = await fetch(utf8.encode(url));
+    const data = await response.json();
+    return data.text;
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+}
+
 
 async function getTimeZone(input) {
   const url = `${_PremiumApiBaseURL}tz.ashx?q=${input}&format=JSON&key=${_PremiumApiKey}`;
@@ -49,15 +65,16 @@ async function getTimeOfDay(input) {
 }
 
 async function dayNight(town) {
-  const townLower = town.toLowerCase();
   try {
     if (town) {
+      let townLower = town.toLowerCase();
+      townLower = await translateTown(townLower);
       const localTime = await getTimeZone(townLower);
       const sun = await getTimeOfDay(townLower);
       if ((localTime instanceof Error) || (sun instanceof Error)) {
         throw new Error(localTime.message + sun.message);
       }
-      return `В ${town} сейчас ${sun.timeOfDay}. Текущее время ${localTime}. 
+      return `В ${town} сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       // Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
@@ -71,7 +88,7 @@ async function dayNight(town) {
 
 // async function test() {
 //   try {
-//     const apiAnswer = await dayNight('123');
+//     const apiAnswer = await dayNight('москва');
 //     answer = apiAnswer;
 //   } catch (err) {
 //     console.log(err);

@@ -4,7 +4,9 @@
     "start": "micro"
   },
   "dependencies": {
+    "encoding": "^0.1.12",
     "micro": "^9.1.0",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "utf8": "^3.0.0"
   }
 }
