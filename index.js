@@ -76,9 +76,12 @@ async function getTimeOfDay(input) {
         timeOfDay = 'Не удалось определить';
         break;
     }
+    const sunrise = data.data.weather[0].astronomy[0].sunrise.split(' ')[0];
+    let sunset = data.data.weather[0].astronomy[0].sunrise.split(' ')[0].split(':');
+    sunset = `${+sunset[0] + 12}:${sunset[1]}`;
     return {
-      sunrise: data.data.weather[0].astronomy[0].sunrise,
-      sunset: data.data.weather[0].astronomy[0].sunset,
+      sunrise,
+      sunset,
       timeOfDay,
       city: data.data.request[0].query,
     };
