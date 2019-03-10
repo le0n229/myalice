@@ -10,10 +10,11 @@ async function getTimeZone(input) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    if (!response.ok) { throw new Error(response.statusText); }
+    if (data.data.error) { throw new Error(data.data.error[0].msg); }
     return data.data.time_zone[0].localtime;
   } catch (err) {
     console.log(err);
+    return err;
   }
 }
 
@@ -22,6 +23,7 @@ async function getTimeOfDay(input) {
   try {
     const response = await fetch(url);
     const data = await response.json();
+    if (data.data.error) { throw new Error(data.data.error[0].msg); }
     let timeOfDay = '';
     switch (data.data.current_condition[0].isdaytime) {
       case 'yes':
@@ -38,27 +40,38 @@ async function getTimeOfDay(input) {
       sunrise: data.data.weather[0].astronomy[0].sunrise,
       sunset: data.data.weather[0].astronomy[0].sunset,
       timeOfDay,
+      city: data.data.request[0].query,
     };
   } catch (err) {
     console.log(err);
-    answer = err.message;
+    return err;
   }
 }
 
 async function dayNight(town) {
   const townLower = town.toLowerCase();
-  if (town) {
-    const localTime = await getTimeZone(townLower);
-    const sun = await getTimeOfDay(townLower);
-
-    return `В ${town} сейчас ${sun.timeOfDay}. Текущее время ${localTime}. Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
+  try {
+    if (town) {
+      const localTime = await getTimeZone(townLower);
+      const sun = await getTimeOfDay(townLower);
+      if ((localTime instanceof Error) || (sun instanceof Error)) {
+        throw new Error(localTime.message + sun.message);
+      }
+      return `В ${town} сейчас ${sun.timeOfDay}. Текущее время ${localTime}. 
+      Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
+      // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
+      // Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
+    }
+  } catch (err) {
+    console.log(err);
+    return `К сожалению, я не знаю такого города как ${town}. Попробуйте назвать другой город!`;
   }
 }
 
 
 // async function test() {
 //   try {
-//     const apiAnswer = await dayNight('Москва');
+//     const apiAnswer = await dayNight('123');
 //     answer = apiAnswer;
 //   } catch (err) {
 //     console.log(err);
