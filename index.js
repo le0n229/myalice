@@ -118,7 +118,6 @@ async function getTimeOfDay(input) {
 }
 
 async function dayNight(town) {
-  
   try {
     if ((town) && (town !== 'ping')) {
       const townCapital = town[0].toUpperCase() + town.slice(1);
@@ -167,7 +166,7 @@ module.exports = async (req) => {
     version,
     session,
     response: {
-      text: answer,
+      text: answer || `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`,
       end_session: false,
     },
   };
