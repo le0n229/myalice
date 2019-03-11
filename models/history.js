@@ -5,6 +5,8 @@ const historySchema = mongoose.Schema({
   answer: String,
   date: Date,
   user: String,
+  searchQuery: String,
+  city: String,
 });
 
 module.exports = mongoose.model('History', historySchema);

@@ -10,7 +10,8 @@ const _PremiumApiKey = 'ff851d0d01964063a12153325190703';
 const translateKey = 'trnsl.1.1.20190310T114702Z.19d93b4e2d8abf15.2bbd56c893ea8083370b43d4b7841b7869d33a8b';
 const translateUrl = 'https://translate.yandex.net/api/v1.5/tr.json/translate';
 let answer = '123';
-
+let query = '';
+let cityEng = '';
 
 const db = mongoose.connect(
   'mongodb+srv://elbrus:Qwerty123@cluster0-dqtpq.mongodb.net/test?retryWrites=true',
@@ -19,13 +20,15 @@ const db = mongoose.connect(
   },
 );
 
-async function saveHistory(question, respond, user) {
+async function saveHistory(question, respond, user, searchQuery, city) {
   try {
     const history = new History({
       question,
       answer: respond,
       date: new Date(),
       user,
+      searchQuery,
+      city,
     });
     await history.save();
   } catch (error) {
@@ -38,6 +41,7 @@ async function translateTown(town) {
     const url = `${translateUrl}?key=${translateKey}&text=${town}&lang=ru-en`;
     const response = await fetch(utf8.encode(url));
     const data = await response.json();
+    cityEng = data.text;
     return data.text;
   } catch (err) {
     console.log(err);
@@ -103,6 +107,7 @@ async function dayNight(town) {
       if ((localTime instanceof Error) || (sun instanceof Error)) {
         throw new Error(localTime.message + sun.message);
       }
+      query = sun.city;
       return `В городе ${townCapital} сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
@@ -120,14 +125,12 @@ function exampleTown(array) {
 }
 
 
-
-
 // async function test() {
 //   try {
 //     const question = 'москва';
 //     const apiAnswer = await dayNight(question);
 //     answer = apiAnswer;
-//     await saveHistory(question, answer, 'testUser');
+//     await saveHistory(question, answer, 'testUser', query);
 //   } catch (err) {
 //     console.log(err);
 //     answer = err.message;
@@ -141,7 +144,7 @@ const { json } = require('micro');
 module.exports = async (req) => {
   const { request, session, version } = await json(req);
   answer = await dayNight(request.original_utterance);
-  await saveHistory(request.original_utterance, answer, session.session_id);
+  await saveHistory(request.original_utterance, answer, session.session_id, query, cityEng);
   const sampleTown = exampleTown(towns);
   return {
     version,
