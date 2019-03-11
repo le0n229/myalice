@@ -121,7 +121,7 @@ async function dayNight(town) {
         throw new Error(localTime.message + sun.message);
       }
       query = sun.city;
-      const country = translateCountry(query.split(',')[1]);
+      const country = await translateCountry(query.split(',')[1]);
       return `В городе ${townCapital}(${country}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
@@ -165,7 +165,7 @@ module.exports = async (req) => {
     version,
     session,
     response: {
-      text: answer || sampleAnswer,
+      text: answer || 'Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например Якутск!',
       end_session: false,
     },
   };
