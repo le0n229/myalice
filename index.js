@@ -9,9 +9,9 @@ const _PremiumApiBaseURL = 'http://api.worldweatheronline.com/premium/v1/';
 const _PremiumApiKey = 'ff851d0d01964063a12153325190703';
 const translateKey = 'trnsl.1.1.20190310T114702Z.19d93b4e2d8abf15.2bbd56c893ea8083370b43d4b7841b7869d33a8b';
 const translateUrl = 'https://translate.yandex.net/api/v1.5/tr.json/translate';
-let answer = '123';
 let query = '';
 let cityEng = '';
+
 
 const db = mongoose.connect(
   'mongodb+srv://elbrus:Qwerty123@cluster0-dqtpq.mongodb.net/test?retryWrites=true',
@@ -19,6 +19,14 @@ const db = mongoose.connect(
     useNewUrlParser: true,
   },
 );
+
+function exampleTown(array) {
+  const index = Math.round(Math.random() * array.length);
+  return array[index];
+}
+
+const sampleTown = exampleTown(towns);
+let answer = `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`;
 
 async function saveHistory(question, respond, user, searchQuery, city) {
   try {
@@ -110,9 +118,10 @@ async function getTimeOfDay(input) {
 }
 
 async function dayNight(town) {
-  const townCapital = town[0].toUpperCase() + town.slice(1);
+  
   try {
     if ((town) && (town !== 'ping')) {
+      const townCapital = town[0].toUpperCase() + town.slice(1);
       let townLower = town.toLowerCase();
       townLower = await translateTown(townLower);
       const localTime = await getTimeZone(townLower);
@@ -133,25 +142,20 @@ async function dayNight(town) {
   }
 }
 
-function exampleTown(array) {
-  const index = Math.round(Math.random() * array.length);
-  return array[index];
+
+async function test() {
+  try {
+    const question = '';
+    const apiAnswer = await dayNight(question);
+    answer = apiAnswer;
+    await saveHistory(question, answer, 'testUser', query);
+  } catch (err) {
+    console.log(err);
+    answer = err.message;
+  }
+  console.log(answer);
 }
-
-
-// async function test() {
-//   try {
-//     const question = 'москва';
-//     const apiAnswer = await dayNight(question);
-//     answer = apiAnswer;
-//     await saveHistory(question, answer, 'testUser', query);
-//   } catch (err) {
-//     console.log(err);
-//     answer = err.message;
-//   }
-//   console.log(answer);
-// }
-// test();
+test();
 
 const { json } = require('micro');
 
@@ -159,13 +163,11 @@ module.exports = async (req) => {
   const { request, session, version } = await json(req);
   answer = await dayNight(request.original_utterance);
   await saveHistory(request.original_utterance, answer, session.session_id, query, cityEng);
-  const sampleTown = exampleTown(towns);
-  const sampleAnswer = `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`
   return {
     version,
     session,
     response: {
-      text: answer || 'Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например Якутск!',
+      text: answer,
       end_session: false,
     },
   };
