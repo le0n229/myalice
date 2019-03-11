@@ -143,19 +143,19 @@ async function dayNight(town) {
 }
 
 
-async function test() {
-  try {
-    const question = '';
-    const apiAnswer = await dayNight(question);
-    answer = apiAnswer;
-    await saveHistory(question, answer, 'testUser', query);
-  } catch (err) {
-    console.log(err);
-    answer = err.message;
-  }
-  console.log(answer);
-}
-test();
+// async function test() {
+//   try {
+//     const question = 'ижевск';
+//     const apiAnswer = await dayNight(question);
+//     answer = apiAnswer;
+//     await saveHistory(question, answer, 'testUser', query);
+//   } catch (err) {
+//     console.log(err);
+//     answer = err.message;
+//   }
+//   console.log(answer);
+// }
+// test();
 
 const { json } = require('micro');
 
