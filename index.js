@@ -49,6 +49,19 @@ async function translateTown(town) {
   }
 }
 
+async function translateCountry(country) {
+  try {
+    const url = `${translateUrl}?key=${translateKey}&text=${country}&lang=en-ru`;
+    const response = await fetch(utf8.encode(url));
+    const data = await response.json();
+    cityEng = data.text;
+    return data.text;
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+}
+
 
 async function getTimeZone(input) {
   const url = `${_PremiumApiBaseURL}tz.ashx?q=${input}&format=JSON&key=${_PremiumApiKey}`;
@@ -108,7 +121,8 @@ async function dayNight(town) {
         throw new Error(localTime.message + sun.message);
       }
       query = sun.city;
-      return `В городе ${townCapital} сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
+      const country = translateCountry(query.split(',')[1]);
+      return `В городе ${townCapital}(${country}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       // Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
@@ -146,11 +160,12 @@ module.exports = async (req) => {
   answer = await dayNight(request.original_utterance);
   await saveHistory(request.original_utterance, answer, session.session_id, query, cityEng);
   const sampleTown = exampleTown(towns);
+  const sampleAnswer = `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`
   return {
     version,
     session,
     response: {
-      text: answer || `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`,
+      text: answer || sampleAnswer,
       end_session: false,
     },
   };
