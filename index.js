@@ -119,8 +119,14 @@ async function getTimeOfDay(input) {
 
 async function dayNight(town) {
   try {
+    if (/запусти/i.test(town)) {
+      return;
+    }
+    if (/виктор/i.test(town)) {
+      return 'Привет Виктор!!!'
+    }
     if ((town) && (town !== 'ping')) {
-      const townCapital = town[0].toUpperCase() + town.slice(1);
+      let townCapital = town[0].toUpperCase() + town.slice(1);
       let townLower = town.toLowerCase();
       townLower = await translateTown(townLower);
       const localTime = await getTimeZone(townLower);
@@ -130,6 +136,7 @@ async function dayNight(town) {
       }
       query = sun.city;
       const country = await translateCountry(query.split(',')[1]);
+      townCapital= await translateCountry(query.split(',')[0]);
       return `В городе ${townCapital}(${country}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
@@ -144,7 +151,7 @@ async function dayNight(town) {
 
 // async function test() {
 //   try {
-//     const question = 'ижевск';
+//     const question = 'Виктор';
 //     const apiAnswer = await dayNight(question);
 //     answer = apiAnswer;
 //     await saveHistory(question, answer, 'testUser', query);
