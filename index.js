@@ -4,7 +4,7 @@ const utf8 = require('utf8');
 const mongoose = require('mongoose');
 const History = require('./models/history');
 
-const towns = ['Москва', 'Ижевск', 'Якутск', 'Лондон'];
+
 const _PremiumApiBaseURL = 'http://api.worldweatheronline.com/premium/v1/';
 const _PremiumApiKey = 'ff851d0d01964063a12153325190703';
 const translateKey = 'trnsl.1.1.20190310T114702Z.19d93b4e2d8abf15.2bbd56c893ea8083370b43d4b7841b7869d33a8b';
@@ -20,13 +20,8 @@ const db = mongoose.connect(
   },
 );
 
-function exampleTown(array) {
-  const index = Math.round(Math.random() * array.length);
-  return array[index];
-}
 
-const sampleTown = exampleTown(towns);
-let answer = `Данный навык является приватным. Давайте узнаем время суток в других городах! Назовите любой город, например ${sampleTown}!`;
+let answer = '';
 
 async function saveHistory(question, respond, user, searchQuery, city) {
   try {
@@ -123,7 +118,7 @@ async function dayNight(town) {
       return;
     }
     if (/виктор/i.test(town)) {
-      return 'Привет Виктор!!!'
+      return 'Привет Виктор!!!';
     }
     if ((town) && (town !== 'ping')) {
       let townCapital = town[0].toUpperCase() + town.slice(1);
@@ -136,7 +131,7 @@ async function dayNight(town) {
       }
       query = sun.city;
       const country = await translateCountry(query.split(',')[1]);
-      townCapital= await translateCountry(query.split(',')[0]);
+      townCapital = await translateCountry(query.split(',')[0]);
       return `В городе ${townCapital}(${country}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
       Восход в ${sun.sunrise}. Закат в ${sun.sunset}.`;
       // return `В ${town}(${sun.city}) сейчас ${sun.timeOfDay}. Текущее время ${localTime}.
@@ -168,7 +163,15 @@ const { json } = require('micro');
 module.exports = async (req) => {
   const { request, session, version } = await json(req);
   answer = await dayNight(request.original_utterance);
-  await saveHistory(request.original_utterance, answer, session.session_id, query, cityEng);
+  function exampleTown(array) {
+    const index = Math.round(Math.random() * array.length);
+    return array[index];
+  }
+  const towns = ['Москва', 'Ижевск', 'Якутск', 'Лондон'];
+  const sampleTown = exampleTown(towns);
+  if (request.original_utterance !== 'ping') {
+    await saveHistory(request.original_utterance, answer, session.session_id, query, cityEng);
+  }
   return {
     version,
     session,
